@@ -1,0 +1,17 @@
+{% extends "base_guideadmin.html" %}
+{% block content %}
+
+<div>
+    <div class="card m-3">
+        <h5 class="card-header">
+            {{ page_title }}:
+        </h5>
+        <form class="m-3" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input class="btn btn-info" type="submit" value="Save">
+        <a class="btn btn-light" href="javascript:history.back()">Cancel</a>
+    </form>
+    </div>
+</div>
+
+{% endblock %}

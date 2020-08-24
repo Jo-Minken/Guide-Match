@@ -1,0 +1,152 @@
+{% extends "base_useradmin.html" %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'users:admin:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Bookings</li>
+        {% if show_filter %}
+            <li class="breadcrumb-item active" aria-current="page">{{ request.GET.status|title }} Tours</li>
+        {% endif %}
+    </ol>
+</nav>
+
+<div class="p-3 border-bottom">
+    <form action="" method="get">
+        <button type="sumit" class="btn btn-primary" name="status" value="all">All tours</button>
+        <button type="sumit" class="btn btn-info" name="status" value="upcoming">Upcoming tours</button>
+        <button type="sumit" class="btn btn-secondary" name="status" value="finished">Finished tours</button>
+        <button type="sumit" class="btn btn-danger" name="status" value="cancelled">Cancelled tours</button>
+    </form>
+</div>
+
+<div>
+    {% for booking in bookings %}
+    <div class="card m-3">
+        <h5 class="card-header">
+            <span class="badge {{ booking.get_status_css_class }}">{{ booking.get_status_for_user }}</span>
+            {{ booking.tour }}
+        </h5>
+        <div class="card-body">
+            <h5 class="card-title">Tour Date: {{ booking.get_tour_date }}</h5>
+            <p class="card-text">
+                Booking Date: {{ booking.get_booking_date }}
+            </p>
+
+            {% if booking.guide %}
+            <p class="card-text">
+                Guide Info: {{ booking.guide.name_jp }} ({{ booking.guide.name_en }}) 
+                {{ booking.guide.phone }}
+            </p>
+            {% endif %}
+
+            {% for payment in booking.payment_set.all %}
+            <p class="card-text">
+                Payment Record: {{ payment.get_payment_method }} - $ {{ payment.amount }}
+            </p>
+            {% endfor %}
+
+            {% if booking.is_cancellable %}
+            <p class="card-text">
+                <form action="{% url 'users:admin:booking_cancel' booking.id %}" method="post" onsubmit="return show_alert('{{ booking.get_cancellation_fee }}');">
+                    {% csrf_token %}
+                <input type="submit" class="btn btn-danger" value="Cancel the tour" />
+                </form>
+            </p>
+            {% endif %}
+
+            {% if booking.cancelrecord %}
+            <p class="card-text">
+                Cancellation fee: $ {{ booking.cancelrecord.cancellation_fee }} (cancelled at {{ booking.get_cancelled_date }})
+            </p>
+            {% endif %}
+
+            {% if booking.status == "PaymentReturned" %}
+            <p class="card-text">
+                Your booking is refunded at {{ booking.get_refunded_date }} and $ {{ booking.get_refund }} is refunded.
+            </p>
+            {% endif %}
+
+            {% if booking.is_reviewable %}
+            <p class="card-text">
+                <a href="{% url 'users:admin:booking_review' booking.id %}" class="btn btn-primary">Review the tour</a>
+            </p>
+            {% endif %}
+
+            {% if booking.review %}
+            <p class="card-text">
+                Review ({{ booking.review.get_review_score }}) - {{ booking.review.comment }}
+            </p>
+            {% endif %}
+
+            <p class="card-text">
+                <a href="{% url 'users:admin:booking' booking.id %}" class="btn btn-primary">Contact Guide</a>
+            </p>
+        </div>
+    </div>
+    
+    {% empty %}
+    <div class="alert alert-light">No bookings yet.</div>
+    {% endfor %}
+
+</div>
+
+<nav aria-label="navigation">
+    <ul class="pagination justify-content-center">
+        {% if bookings.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-disabled="true">
+                Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}
+            </a>
+        </li>
+        {% if bookings.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.paginator.num_pages }}">Last &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+<script>
+    window.onload = (event) => {
+        let a_tags = $("a.page-link");
+        a_tags.click(function(){
+            let a_tag = $(this);
+            let url = location.href;
+            url = url.replace(/page=\d+/g, "");
+
+            if (url.indexOf("?") === -1){
+                url += a_tag.attr("href");
+            } else {
+                url += "&" + a_tag.attr("href").substr(1);
+            }
+            url = url.replace(/\?\&/g, "?").replace(/\&\&/g, "&");
+            a_tag.attr("href", url);
+        });
+    };
+
+    function show_alert(cancellation_fee){
+
+        let alert_message = "\
+            - Cancel tour before 14 days: No charge\n \
+            - Cancel tour before 10 days: 10% \n \
+            - Cancel tour before 7 days: 20% \n \
+            - Cancel tour before 3 days: 30% \n \
+            - Cancel tour on 3 days before tour date: 40% \n \
+            - Cancel tour on 2 days before tour date: 50% \n \
+            - Cancel tour on 1 days before tour date: 60% \n \
+            - Without cancellation: No refund\n \
+            \n \
+            The cancellation fee will be: $ " + cancellation_fee; 
+
+        if(!confirm(alert_message)) {
+            return false;
+        }
+        this.form.submit();
+
+    }
+</script>
+
+{% endblock %}

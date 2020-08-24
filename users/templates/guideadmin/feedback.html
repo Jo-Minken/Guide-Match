@@ -1,0 +1,25 @@
+{% extends "base_guideadmin.html" %}
+{% block content %}
+
+<div>
+    <div class="card m-3">
+        <h5 class="card-header">
+            Feedback: {{ booking.tour }}
+        </h5>
+        <div class="card-body">
+            <h5 class="card-title">Tour Date: {{ booking.get_tour_date }}</h5>
+            {% if booking.review %}
+            <p class="card-text">
+                Customer Review ({{ booking.review.get_review_score }}) - {{ booking.review.comment }}
+            </p>
+            {% endif %}
+        </div>
+        <form class="m-3" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input class="btn btn-info" type="submit" value="Save">
+        <a class="btn btn-light" href="javascript:history.back()">Cancel</a>
+    </form>
+    </div>
+</div>
+
+{% endblock %}

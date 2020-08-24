@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="m-3 p-3 row">
+    <form method="POST" style="margin: 0 auto">
+        {% csrf_token %}
+        <div>
+        <h1>Guide Sign Up</h1>
+        {% for field in form.visible_fields %}
+            <div class="fieldWrapper m-3">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+            </div>
+        {% endfor %}
+        
+        <input type="submit" name="signup_submit" value="Sign me up" />
+        </div>
+    </form>
+</div>
+{% endblock %}

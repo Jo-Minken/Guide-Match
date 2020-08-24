@@ -1,0 +1,74 @@
+{% extends "base_guideadmin.html" %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'guides:admin:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">My Tours</li>
+    </ol>
+</nav>
+
+<div class="p-3 border-bottom">
+    <a class="btn btn-primary" href="{% url 'guides:admin:tour_create' %}" >Create My Tour</a>
+</div>
+
+<div>
+    {% for tour in tours %}
+    <div class="card m-3">
+        <h5 class="card-header">
+            {{ tour.name }}
+        </h5>
+        <div class="card-body">
+            <h5 class="card-title">Duration: {{ tour.duration }}</h5>
+            <p class="card-text">Description: {{ tour.description }}</p>
+            <p class="card-text">Approved: {{ tour.approved }}</p>
+            <p class="card-text">
+                <a class="btn btn-primary" href="{% url 'guides:admin:tour_edit' tour.id %}" >Edit Tour</a>
+            </p>
+        </div>
+    </div>
+    
+    {% empty %}
+    <div class="alert alert-light">No tours yet.</div>
+    {% endfor %}
+
+</div>
+
+<nav aria-label="navigation">
+    <ul class="pagination justify-content-center">
+        {% if tours.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ tours.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-disabled="true">
+                Page {{ tours.number }} of {{ tours.paginator.num_pages }}
+            </a>
+        </li>
+        {% if tours.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ tours.next_page_number }}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ tours.paginator.num_pages }}">Last &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+<script>
+    window.onload = (event) => {
+        let a_tags = $("a.page-link");
+        a_tags.click(function(){
+            let a_tag = $(this);
+            let url = location.href;
+            url = url.replace(/page=\d+/g, "");
+
+            if (url.indexOf("?") === -1){
+                url += a_tag.attr("href");
+            } else {
+                url += "&" + a_tag.attr("href").substr(1);
+            }
+            url = url.replace(/\?\&/g, "?").replace(/\&\&/g, "&");
+            a_tag.attr("href", url);
+        });
+    };
+</script>
+
+{% endblock %}

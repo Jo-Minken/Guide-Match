@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="destination_banner_wrap">
+        <div class="destination_text text-center">
+            <h3>{{ daytour.name }}</h3>
+            <p>{{ daytour.description_header }}</p>
+        </div>
+    </div>
+
+    <div class="destination_details_info" style="padding-bottom: 0;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col" style="margin-bottom: 50px;">
+                    <form class="search_form" action="{% url 'bookings:payment' daytour.id %}">
+                        <h3>Book this tour</h3>
+                        
+                        <div class="col-md-9">
+                            <div id="datepicker" placeholder="Date"></div>
+                        </div>
+
+                        <h4 style="margin: 30px 0;">Price: $ {{ daytour.tour_price_without_tax }} / group</h4>
+                        <input type="text" name="tourdate" id="form_tour_date" hidden />
+                        <div class="search_btn">
+                            <button class="boxed-btn4 " type="submit" >Book</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col col-lg-8 col-md-9">
+                    <div class="destination_info">
+                        <h3>{{ daytour.region }} - {{ daytour.duration }}h</h3>
+                        <h4>
+                            {% for tourtype in daytour.tourtypes.all  %}
+                            <span><a href="{% url 'tours:tour_list' %}?tourtype={{tourtype.id}}">{{ tourtype }}</a>{% if not forloop.last %} | {% endif %}</span>
+                            {% endfor %}
+                        </h4>
+                        <p>{{ daytour.description }}</p>
+                        {{ daytour.content|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="popular_places_area">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="section_title text-center mb_70">
+                        <h3>More Tours</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                {% for tour in more_tours %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="single_place">
+                        <div class="thumb">
+                            <img src="{{ tour.gen_thumbnail_path }}" alt="">
+                            <a href="{% url 'tours:tour_detail' tour.id %}" class="prise">${{ tour.tour_price_without_tax }}</a>
+                        </div>
+                        <div class="place_info">
+                            <a href="{% url 'tours:tour_detail' tour.id %}"><h3>{{ tour.name }}</h3></a>
+                            <p>{{ tour.region }}</p>
+                            <div class="rating_days d-flex justify-content-between">
+                                <span class="d-flex justify-content-center align-items-center">
+                                     {% for star in tour.get_review_score %}
+                                     <i class="fa {{ star }}"></i>
+                                     {% endfor %}
+                                     <a href="{% url 'tours:tour_detail' tour.id %}">
+                                     ({{ tour.get_review_count }} Review)
+                                     </a>
+                                </span>
+                                <div class="days">
+                                    <i class="fa fa-clock-o"></i>
+                                    <a href="{% url 'tours:tour_detail' tour.id %}">{{ tour.duration }} Hours</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = (event) => {
+            let dateToday = new Date();
+            dateToday.setDate(dateToday.getDate() + 3);
+            $('#datepicker').datepicker({
+                iconsLibrary: 'fontawesome',
+                icons: {
+                rightIcon: '<span class="fa fa-caret-down"></span>'
+                },
+                minDate: dateToday,
+                maxDate: "+3m",
+                onSelect: function(){
+                    let select_date = $(this).datepicker( "getDate" );
+                    select_date = $.datepicker.formatDate( "yy-mm-dd", select_date );
+                    $("#form_tour_date").val(select_date);
+                },
+            });
+
+            $("#form_tour_date").val($.datepicker.formatDate( "yy-mm-dd", dateToday ));
+        }
+    </script>
+
+{% endblock %}

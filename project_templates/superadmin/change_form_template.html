@@ -1,0 +1,27 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {% if original.status == "TourCanceled" %}
+    <div class="submit-row">
+        Refund: $ {{ original.get_refund }}
+        <textarea name="_note"rows="5" cols="40" placeholder="Transfer note: bank info, transfer time etc..."></textarea>
+        <input class="default" type="submit" value="Refund" name="_refund">
+    </div>
+    {% endif %}
+
+    {% if original.is_salary_need_to_pay %}
+    <div class="submit-row">
+        Guide Salary: {{ original.get_guide_salary }} (60% of the revenue)
+        <div>
+            Guide Bank Info: <br>
+            bank name - {{ original.guide.bank_name }} / 
+            bank branch number - {{ original.guide.bank_branch_number }} /
+            bank account number - {{ original.guide.bank_account_number }} /
+            bank username - {{ original.guide.bank_username }}
+        </div>
+        <textarea name="_note"rows="5" cols="40" placeholder="Transfer note: bank info, transfer time etc..."></textarea>
+        <input class="default" type="submit" value="Pay Salary" name="_pay-salary">
+    </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

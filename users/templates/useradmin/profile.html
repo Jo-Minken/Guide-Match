@@ -1,0 +1,16 @@
+{% extends "base_useradmin.html" %}
+{% block content %}
+
+<div>
+    <div class="card m-3">
+        <h5 class="card-header">
+            Edit Profile:
+        </h5>
+        <form class="m-3" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input class="btn btn-info" type="submit" value="Save">
+    </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base_useradmin.html" %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'guides:admin:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Bookings</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ object.tour }} at {{ object.get_tour_date }}</li>
+    </ol>
+</nav>
+<div class="card m-3">
+    <h5 class="card-header">
+        <span class="badge {{ object.get_status_css_class }}">{{ object.get_status_for_guide }}</span>
+        {{ object.tour }}
+    </h5>
+    <div class="card-body">
+        <h5 class="card-title">Tour Date: {{ object.get_tour_date }}</h5>
+        <p class="card-text">
+            Booking Date: {{ object.get_booking_date }}
+        </p>
+
+        {% if booking.guide %}
+        <p class="card-text">
+            Guide Info: {{ booking.guide.name_jp }} ({{ booking.guide.name_en }}) 
+            {{ booking.guide.phone }}
+        </p>
+        {% endif %}
+
+        {% if object.review %}
+        <p class="card-text">
+            Customer Review ({{ object.review.get_review_score }}) - {{ object.review.comment }}
+        </p>
+        {% endif %}
+
+        {% if object.feedback %}
+        <p class="card-text">
+            Your Feedback - {{ object.feedback.feedback }}
+        </p>
+        {% endif %}
+
+    </div>
+</div>
+<div class="m-3 p-3" style="margin: 0 auto;">
+    <h5>Contact your customer:</h5>
+    <p>Last login time of your customer: {{ object.customer.last_login }}</p>
+    <div class="m-1 p-1">
+        <h6>message record</h6>
+        {% for message in object.message_set.all %}
+        {{ message.note }} - {{ message.created_at }}<br>
+        {% empty %}
+        No messages
+        {% endfor %}
+    </div>
+    <textarea id="chat-log" cols="100" rows="15" readonly></textarea><br>
+    <input id="chat-message-input" type="text" size="100">
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ object.id|json_script:"room-name" }}
+</div>
+<script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.querySelector('#chat-log').value += (data.message + '\n');
+
+        document.querySelector('#chat-log').scrollTop = document.querySelector('#chat-log').scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = 'From Customer: ' + messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+
+        const request = new Request(
+            "{% url 'users:message_create' object.id %}",
+            { headers: {'X-CSRFToken': "{{ csrf_token }}"} }
+        );
+        fetch(request, {
+            method: 'POST',
+            mode: 'same-origin',
+            body: JSON.stringify({'message': message})
+        })
+        .then(function(response){
+            console.log(response);
+        });
+
+        messageInputDom.value = '';
+    };
+
+    
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base_guideadmin.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h2 class="text-info">Hi, {{ request.user.username }}</h2>
+</div>
+
+<div>
+    <h4>Your recent tours:</h4>
+    
+    {% for booking in bookings %}
+    <div class="card m-3">
+        <h5 class="card-header">
+            <span class="badge {{ booking.get_status_css_class }}">{{ booking.get_status_for_guide }}</span>
+            {{ booking.tour }}
+        </h5>
+        <div class="card-body">
+            <h5 class="card-title">Tour Date: {{ booking.get_tour_date }}</h5>
+            <p class="card-text">
+                Booking Date: {{ booking.get_booking_date }}
+            </p>
+        </div>
+    </div>
+    
+    {% empty %}
+    <div class="alert alert-light">No tours yet.</div>
+    {% endfor %}
+
+    <h4>Your recent messages:</h4>
+
+    {% for message in insite_mgs %}
+    <div class="card m-3">
+        <h5 class="card-header">
+            <a href="{% url 'guides:admin:booking' message.booking.id %}" >{{ message.booking.tour }}</a>
+        </h5>
+        <div class="card-body">
+            <p class="card-text">
+                {{ message.note }}
+            </p>
+        </div>
+    </div>
+    
+    {% empty %}
+    <div class="alert alert-light">No messages yet.</div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

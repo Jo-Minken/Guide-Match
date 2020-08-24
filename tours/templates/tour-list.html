@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <!-- where_togo_area_start  -->
+    <div class="where_togo_area">
+        <div class="container">
+            <div class="row align-items-center">
+                <h3 style="color: #fff;">Tours
+                    {% if request.GET.region and title_setting.show_region %}
+                    <span> > Region： {{ request.GET.region }} </span>
+                    {% endif %}
+                    {% if request.GET.tourtype and title_setting.show_tourtype %}
+                    <span> > TourType： {{ tourtype.name }} </span>
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+    </div>
+    <!-- where_togo_area_end  -->
+
+
+    <div class="popular_places_area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <form action="{% url 'tours:tour_list' %}">
+                    <div class="filter_result_wrap">
+                        <h3>Filter Result</h3>
+                        <div class="filter_bordered">
+                            <div class="filter_inner">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="single_select">
+                                            <select name="region">
+                                                <option data-display="Region">Region</option>
+                                                <option value="Tokyo" {% if request.GET.region == "Tokyo" %} selected {% endif %}>Tokyo</option>
+                                                <option value="Osaka" {% if request.GET.region == "Osaka" %} selected {% endif %}>Osaka</option>
+                                                <option value="Kyoto" {% if request.GET.region == "Kyoto" %} selected {% endif %}>Kyoto</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="single_select">
+                                            <select name="tourtype">
+                                                <option data-display="Travel type">Travel type</option>
+                                                {% for tourtype in tourtypes %}
+                                                <option value="{{tourtype.id}}" {% if request.GET.tourtype == tourtype.id|slugify %} selected {% endif %}>{{tourtype.name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="range_slider_wrap">
+                                            <span class="range">Price range</span>
+                                            <div id="slider-range"></div>
+                                            <p>
+                                                <input type="text" id="amount" readonly style="border:0; color:#7A838B; font-weight:400;">
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="reset_btn">
+                                <button class="boxed-btn4" type="submit">Set Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="col-lg-8">
+                    <!-- SHOW: pagination on top -->
+                    <div class="row">
+                        <div class="pagination" style="margin: 30px auto;">
+                            <span class="step-links">
+                                {% if day_tours.has_previous %}
+                                    <a class="genric-btn primary circle" href="?page=1">&laquo; first</a>
+                                    <a class="genric-btn default circle" href="?page={{ day_tours.previous_page_number }}">previous</a>
+                                {% endif %}
+                        
+                                <span class="current">
+                                    Page {{ day_tours.number }} of {{ day_tours.paginator.num_pages }}
+                                </span>
+                        
+                                {% if day_tours.has_next %}
+                                    <a class="genric-btn default circle" href="?page={{ day_tours.next_page_number }}">next</a>
+                                    <a class="genric-btn primary circle" href="?page={{ day_tours.paginator.num_pages }}">last &raquo;</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- SHOW: list the tours -->
+                        {% for daytour in daytours %}
+                        <div class="col-lg-6 col-md-6">
+                            <div class="single_place">
+                                <div class="thumb">
+                                    <img src="{{ daytour.gen_thumbnail_path }}" alt="">
+                                    <a href="{% url 'tours:tour_detail' daytour.id %}" class="prise">${{ daytour.tour_price_without_tax }}</a>
+                                </div>
+                                <div class="place_info">
+                                    <a href="{% url 'tours:tour_detail' daytour.id %}"><h3>{{ daytour.name }}</h3></a>
+                                    <p>{{ daytour.region }}</p>
+                                    <div class="rating_days d-flex justify-content-between">
+                                        <span class="d-flex justify-content-center align-items-center">
+                                             {% for star in daytour.get_review_score %}
+                                             <i class="fa {{ star }}"></i>
+                                             {% endfor %}
+                                             <a href="{% url 'tours:tour_detail' daytour.id %}">
+                                             ({{ daytour.get_review_count }} Review)
+                                             </a>
+                                        </span>
+                                        <div class="days">
+                                            <i class="fa fa-clock-o"></i>
+                                            <a href="{% url 'tours:tour_detail' daytour.id %}">{{ daytour.duration }} Hours</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- SHOW: pagination -->
+                    <div class="row">
+                        <div class="pagination" style="margin: 30px auto;">
+                            <span class="step-links">
+                                {% if day_tours.has_previous %}
+                                    <a class="genric-btn primary circle" href="?page=1">&laquo; first</a>
+                                    <a class="genric-btn default circle" href="?page={{ day_tours.previous_page_number }}">previous</a>
+                                {% endif %}
+                        
+                                <span class="current">
+                                    Page {{ day_tours.number }} of {{ day_tours.paginator.num_pages }}
+                                </span>
+                        
+                                {% if day_tours.has_next %}
+                                    <a class="genric-btn default circle" href="?page={{ day_tours.next_page_number }}">next</a>
+                                    <a class="genric-btn primary circle" href="?page={{ day_tours.paginator.num_pages }}">last &raquo;</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    window.onload = (event) => {
+        let a_tags = $("a.genric-btn");
+        a_tags.click(function(){
+            let a_tag = $(this);
+            let url = location.href;
+            url = url.replace(/page=\d+/g, "");
+
+            if (url.indexOf("?") === -1){
+                url += a_tag.attr("href");
+            } else {
+                url += "&" + a_tag.attr("href").substr(1);
+            }
+            url = url.replace(/\?\&/g, "?").replace(/\&\&/g, "&");
+            a_tag.attr("href", url);
+        });
+
+        let form = $("form");
+        form.submit(function(){
+            let select_region = $("select[name=region]");
+            if(select_region.val() == "Region") { select_region.removeAttr("name"); }
+
+            let select_tourtype = $("select[name=tourtype]");
+            if(select_tourtype.val() == "Travel type") { select_tourtype.removeAttr("name"); }
+        });
+    };
+</script>
+
+{% endblock %}
